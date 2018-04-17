@@ -9,14 +9,18 @@ import org.objectweb.asm.commons.GeneratorAdapter;
 import static org.objectweb.asm.Opcodes.*;
 
 import com.github.mouse0w0.fastreflection.MethodAccessor;
+import com.github.mouse0w0.fastreflection.util.AsmUtils;
 import com.github.mouse0w0.fastreflection.util.SafeClassDefiner;
 
 public class AsmMethodAccessor {
-
+	
+	private static int id = 0;
+	
 	public static MethodAccessor create(Method method) throws Exception {
 		boolean isStatic = Modifier.isStatic(method.getModifiers());
 		Class<?> declaringClass = method.getDeclaringClass();
-		String className = getUniqueName(method);
+		String className = String.format("AsmMethodAccessor_%d_%s_%s", id++, declaringClass.getSimpleName(),
+				method.getName());
 		ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
 		FieldVisitor fv;
 		MethodVisitor mv;
@@ -29,25 +33,13 @@ public class AsmMethodAccessor {
 		fv = cw.visitField(ACC_PRIVATE + ACC_FINAL, "method", "Ljava/lang/reflect/Method;", null, null);
 		fv.visitEnd();
 
-		if (!isStatic) {
-			fv = cw.visitField(ACC_PRIVATE + ACC_FINAL, "instance", "Ljava/lang/Object;", null, null);
-			fv.visitEnd();
-		}
-
 		{
-			mv = cw.visitMethod(ACC_PUBLIC, "<init>",
-					isStatic ? "(Ljava/lang/reflect/Method;)V" : "(Ljava/lang/reflect/Method;Ljava/lang/Object;)V",
-					null, null);
+			mv = cw.visitMethod(ACC_PUBLIC, "<init>", "(Ljava/lang/reflect/Method;)V", null, null);
 			mv.visitVarInsn(ALOAD, 0);
 			mv.visitMethodInsn(INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false);
 			mv.visitVarInsn(ALOAD, 0);
 			mv.visitVarInsn(ALOAD, 1);
 			mv.visitFieldInsn(PUTFIELD, className, "method", "Ljava/lang/reflect/Method;");
-			if (!isStatic) {
-				mv.visitVarInsn(ALOAD, 0);
-				mv.visitVarInsn(ALOAD, 2);
-				mv.visitFieldInsn(PUTFIELD, className, "instance", "Ljava/lang/Object;");
-			}
 			mv.visitInsn(RETURN);
 			mv.visitEnd();
 		}
@@ -55,6 +47,7 @@ public class AsmMethodAccessor {
 		{
 			mv = cw.visitMethod(ACC_PUBLIC, "getMethod", "()Ljava/lang/reflect/Method;", null, null);
 			mv.visitVarInsn(ALOAD, 0);
+			mv.visitFieldInsn(GETFIELD, className, "method", "Ljava/lang/reflect/Method;");
 			mv.visitInsn(ARETURN);
 			mv.visitEnd();
 		}
@@ -70,11 +63,15 @@ public class AsmMethodAccessor {
 			}
 			Class<?>[] types = method.getParameterTypes();
 			for (int i = 0; i < types.length; i++) {
-				Type type = Type.getType(types[i]);
-				ag.loadArg(2);
+				Class<?> paraClazz = types[i];
+				Type paraType = Type.getType(paraClazz);
+				ag.loadArg(1);
 				ag.push(i);
-				ag.arrayLoad(type);
-				ag.checkCast(type);
+				ag.arrayLoad(AsmUtils.OBJECT_TYPE);
+				if(paraClazz.isPrimitive())
+					ag.unbox(paraType);
+				else
+					ag.checkCast(paraType);
 			}
 			if (isStatic) {
 				ag.visitMethodInsn(INVOKESTATIC, Type.getInternalName(declaringClass), method.getName(),
@@ -86,7 +83,10 @@ public class AsmMethodAccessor {
 				ag.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(declaringClass), method.getName(),
 						Type.getMethodDescriptor(method), false);
 			}
-			ag.box(Type.getReturnType(method));
+			if (method.getReturnType().equals(void.class))
+				ag.push((Type)null);
+			else
+				ag.box(Type.getReturnType(method));
 			ag.returnValue();
 			ag.endMethod();
 		}
@@ -96,12 +96,4 @@ public class AsmMethodAccessor {
 				.defineClass(declaringClass.getClassLoader(), className, cw.toByteArray()).getConstructor(Method.class)
 				.newInstance(method);
 	}
-
-	private static int id = 0;
-
-	private static String getUniqueName(Method method) {
-		return String.format("AsmMethodAccessor_%d_%s_%s", id++, method.getDeclaringClass().getSimpleName(),
-				method.getName());
-	}
-
 }

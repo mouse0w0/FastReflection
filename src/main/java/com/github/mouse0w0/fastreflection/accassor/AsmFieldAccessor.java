@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
 import com.github.mouse0w0.fastreflection.FieldAccessor;
+import com.github.mouse0w0.fastreflection.util.AsmUtils;
 import com.github.mouse0w0.fastreflection.util.SafeClassDefiner;
 
 import org.objectweb.asm.*;
@@ -15,16 +16,14 @@ public final class AsmFieldAccessor {
 
 	private static int id = 0;
 
-	private static final Type OBJECT_TYPE = Type.getType(Object.class);
-
 	public static FieldAccessor create(Field field) throws Exception {
 		Class<?> declaringClass = field.getDeclaringClass();
-		String className = String.format("AsmFieldAccessor_%d_%s_%s", id++, field.getDeclaringClass().getSimpleName(),
+		String className = String.format("AsmFieldAccessor_%d_%s_%s", id++, declaringClass.getSimpleName(),
 				field.getName());
+		boolean isStatic = Modifier.isStatic(field.getModifiers());
 		Type declaringClassType = Type.getType(declaringClass);
 		String fieldName = field.getName();
 		Type fieldType = Type.getType(field.getType());
-		boolean isStatic = Modifier.isStatic(field.getModifiers());
 
 		ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
 		FieldVisitor fv;
@@ -60,7 +59,7 @@ public final class AsmFieldAccessor {
 			mv.visitEnd();
 		}
 
-		createGetMethod(cw, "get", OBJECT_TYPE, declaringClassType, fieldName, fieldType, isStatic);
+		createGetMethod(cw, "get", AsmUtils.OBJECT_TYPE, declaringClassType, fieldName, fieldType, isStatic);
 		createGetMethod(cw, "getByte", Type.BYTE_TYPE, declaringClassType, fieldName, fieldType, isStatic);
 		createGetMethod(cw, "getShort", Type.SHORT_TYPE, declaringClassType, fieldName, fieldType, isStatic);
 		createGetMethod(cw, "getInt", Type.INT_TYPE, declaringClassType, fieldName, fieldType, isStatic);
@@ -70,7 +69,7 @@ public final class AsmFieldAccessor {
 		createGetMethod(cw, "getBoolean", Type.BOOLEAN_TYPE, declaringClassType, fieldName, fieldType, isStatic);
 		createGetMethod(cw, "getChar", Type.CHAR_TYPE, declaringClassType, fieldName, fieldType, isStatic);
 
-		createSetMethod(cw, "set", OBJECT_TYPE, declaringClassType, fieldName, fieldType, isStatic);
+		createSetMethod(cw, "set", AsmUtils.OBJECT_TYPE, declaringClassType, fieldName, fieldType, isStatic);
 		createSetMethod(cw, "set", Type.BYTE_TYPE, declaringClassType, fieldName, fieldType, isStatic);
 		createSetMethod(cw, "set", Type.SHORT_TYPE, declaringClassType, fieldName, fieldType, isStatic);
 		createSetMethod(cw, "set", Type.INT_TYPE, declaringClassType, fieldName, fieldType, isStatic);
