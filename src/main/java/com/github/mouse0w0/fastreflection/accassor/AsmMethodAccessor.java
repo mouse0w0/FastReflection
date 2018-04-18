@@ -19,6 +19,8 @@ public class AsmMethodAccessor {
 	public static MethodAccessor create(Method method) throws Exception {
 		boolean isStatic = Modifier.isStatic(method.getModifiers());
 		Class<?> declaringClass = method.getDeclaringClass();
+		Type declaringClassType = Type.getType(declaringClass);
+		String declaringClassName = declaringClassType.getInternalName();
 		String className = String.format("AsmMethodAccessor_%d_%s_%s", id++, declaringClass.getSimpleName(),
 				method.getName());
 		ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
@@ -26,7 +28,7 @@ public class AsmMethodAccessor {
 		MethodVisitor mv;
 
 		cw.visit(V1_8, ACC_PUBLIC + ACC_SUPER, className, null, "java/lang/Object",
-				new String[] { "team/unstudio/udpl/util/reflect/MethodAccessor" });
+				new String[] { "com/github/mouse0w0/fastreflection/MethodAccessor" });
 
 		cw.visitSource(".dynamic", null);
 
@@ -41,6 +43,7 @@ public class AsmMethodAccessor {
 			mv.visitVarInsn(ALOAD, 1);
 			mv.visitFieldInsn(PUTFIELD, className, "method", "Ljava/lang/reflect/Method;");
 			mv.visitInsn(RETURN);
+			mv.visitMaxs(0, 0);
 			mv.visitEnd();
 		}
 
@@ -49,6 +52,7 @@ public class AsmMethodAccessor {
 			mv.visitVarInsn(ALOAD, 0);
 			mv.visitFieldInsn(GETFIELD, className, "method", "Ljava/lang/reflect/Method;");
 			mv.visitInsn(ARETURN);
+			mv.visitMaxs(0, 0);
 			mv.visitEnd();
 		}
 
@@ -59,7 +63,8 @@ public class AsmMethodAccessor {
 							new String[] { "java/lang/Exception" }),
 					ACC_PUBLIC + ACC_VARARGS, "invoke", "(Ljava/lang/Object;[Ljava/lang/Object;)Ljava/lang/Object;");
 			if (!isStatic) {
-				ag.loadArg(1);
+				ag.loadArg(0);
+				ag.checkCast(declaringClassType);
 			}
 			Class<?>[] types = method.getParameterTypes();
 			for (int i = 0; i < types.length; i++) {
@@ -74,13 +79,13 @@ public class AsmMethodAccessor {
 					ag.checkCast(paraType);
 			}
 			if (isStatic) {
-				ag.visitMethodInsn(INVOKESTATIC, Type.getInternalName(declaringClass), method.getName(),
+				ag.visitMethodInsn(INVOKESTATIC, declaringClassName, method.getName(),
 						Type.getMethodDescriptor(method), false);
 			} else if (method.getDeclaringClass().isInterface()) {
-				ag.visitMethodInsn(INVOKEINTERFACE, Type.getInternalName(declaringClass), method.getName(),
+				ag.visitMethodInsn(INVOKEINTERFACE, declaringClassName, method.getName(),
 						Type.getMethodDescriptor(method), true);
 			} else {
-				ag.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(declaringClass), method.getName(),
+				ag.visitMethodInsn(INVOKEVIRTUAL, declaringClassName, method.getName(),
 						Type.getMethodDescriptor(method), false);
 			}
 			if (method.getReturnType().equals(void.class))
@@ -88,6 +93,7 @@ public class AsmMethodAccessor {
 			else
 				ag.box(Type.getReturnType(method));
 			ag.returnValue();
+			ag.visitMaxs(0, 0);
 			ag.endMethod();
 		}
 		cw.visitEnd();

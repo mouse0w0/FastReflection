@@ -3,20 +3,13 @@ package com.github.mouse0w0.fastreflection.accassor;
 import java.lang.reflect.Field;
 
 import com.github.mouse0w0.fastreflection.FieldAccessor;
-import com.github.mouse0w0.fastreflection.util.UnsafeReflections;
 
 public class ReflectFieldAccessor implements FieldAccessor {
 
 	private final Field field;
-	
-	public ReflectFieldAccessor(Field field) throws ReflectiveOperationException {
-		this(field, false);
-	}
 
-	public ReflectFieldAccessor(Field field, boolean unsafe) throws ReflectiveOperationException {
-		UnsafeReflections.accessible(field);
-		if(unsafe)
-			UnsafeReflections.unfinal(field);
+	public ReflectFieldAccessor(Field field){
+		field.setAccessible(true);
 		this.field = field;
 	}
 

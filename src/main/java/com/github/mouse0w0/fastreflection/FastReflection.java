@@ -12,7 +12,10 @@ import com.github.mouse0w0.fastreflection.accassor.ReflectConstructorAccessor;
 import com.github.mouse0w0.fastreflection.accassor.ReflectFieldAccessor;
 import com.github.mouse0w0.fastreflection.accassor.ReflectMethodAccessor;
 import com.github.mouse0w0.fastreflection.accassor.UnsafeFieldAccessor;
+import com.github.mouse0w0.fastreflection.accassor.UnsafeStaticFieldAccessor;
+import com.github.mouse0w0.fastreflection.accassor.UnsafeStaticVolatileFieldAccessor;
 import com.github.mouse0w0.fastreflection.accassor.UnsafeVolatileFieldAccessor;
+import com.github.mouse0w0.fastreflection.util.UnsafeReflections;
 import com.github.mouse0w0.fastreflection.util.UnsafeUtils;
 
 public class FastReflection {
@@ -21,21 +24,25 @@ public class FastReflection {
 		return create(field, false);
 	}
 	
-	public static FieldAccessor create(Field field, boolean unsafe) throws Exception{
+	public static FieldAccessor create(Field field, boolean unsafe) throws Exception {
 		int modifiers = field.getModifiers();
 		
 		if(Modifier.isPublic(modifiers) && !Modifier.isFinal(modifiers)) {
 			return AsmFieldAccessor.create(field);
 		}
 		
-		if(unsafe && UnsafeUtils.isUnsafeSupported()) {
-			if(Modifier.isVolatile(modifiers))
-				return new UnsafeVolatileFieldAccessor(field);
+		if (unsafe && UnsafeUtils.isUnsafeSupported()) {
+			if (Modifier.isVolatile(modifiers))
+				return Modifier.isStatic(modifiers) ? new UnsafeStaticVolatileFieldAccessor(field)
+						: new UnsafeVolatileFieldAccessor(field);
 			else
-				return new UnsafeFieldAccessor(field);
+				return Modifier.isStatic(modifiers) ? new UnsafeStaticFieldAccessor(field)
+						: new UnsafeFieldAccessor(field);
 		}
-		
-		return new ReflectFieldAccessor(field, unsafe);
+
+		if (unsafe)
+			UnsafeReflections.unfinal(field);
+		return new ReflectFieldAccessor(field);
 	}
 	
 	public static MethodAccessor create(Method method) throws Exception {
@@ -48,7 +55,7 @@ public class FastReflection {
 		return new ReflectMethodAccessor(method);
 	}
 	
-	public static <T> ConstructorAccessor<T> create(Constructor<T> constructor) {
+	public static <T> ConstructorAccessor<T> create(Constructor<T> constructor) throws Exception {
 		int modifiers = constructor.getModifiers();
 		
 		if(Modifier.isPublic(modifiers)) {

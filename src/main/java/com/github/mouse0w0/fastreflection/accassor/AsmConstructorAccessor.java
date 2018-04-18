@@ -1,12 +1,12 @@
 package com.github.mouse0w0.fastreflection.accassor;
 
 import java.lang.reflect.Constructor;
-
 import org.objectweb.asm.*;
 import org.objectweb.asm.commons.GeneratorAdapter;
 
 import com.github.mouse0w0.fastreflection.ConstructorAccessor;
 import com.github.mouse0w0.fastreflection.util.AsmUtils;
+import com.github.mouse0w0.fastreflection.util.SafeClassDefiner;
 
 import static org.objectweb.asm.Opcodes.*;
 
@@ -14,7 +14,8 @@ public class AsmConstructorAccessor {
 
 	private static int id = 0;
 	
-	public static <T> ConstructorAccessor<T> create(Constructor<T> constructor) {
+	@SuppressWarnings("unchecked")
+	public static <T> ConstructorAccessor<T> create(Constructor<T> constructor) throws Exception{
 		Class<?> declaringClass = constructor.getDeclaringClass();
 		Type declaringClassType = Type.getType(declaringClass);
 		String declaringClassName = declaringClassType.getInternalName();
@@ -48,6 +49,7 @@ public class AsmConstructorAccessor {
 			mv.visitFieldInsn(PUTFIELD, className, "constructor",
 					"Ljava/lang/reflect/Constructor;");
 			mv.visitInsn(RETURN);
+			mv.visitMaxs(0, 0);
 			mv.visitEnd();
 		}
 
@@ -59,21 +61,22 @@ public class AsmConstructorAccessor {
 			mv.visitFieldInsn(GETFIELD, className, "constructor",
 					"Ljava/lang/reflect/Constructor;");
 			mv.visitInsn(ARETURN);
+			mv.visitMaxs(0, 0);
 			mv.visitEnd();
 		}
 
 		{
-			mv = cw.visitMethod(ACC_PUBLIC + ACC_VARARGS, "newInstance", "([Ljava/lang/Object;)" + declaringClassDesc,
+			mv = cw.visitMethod(ACC_PUBLIC + ACC_VARARGS, "newInstance", "([Ljava/lang/Object;)Ljava/lang/Object;",
 					null, new String[] { "java/lang/Exception" });
 			GeneratorAdapter ag = new GeneratorAdapter(mv, ACC_PUBLIC + ACC_VARARGS, "newInstance",
-					"([Ljava/lang/Object;)" + declaringClassDesc);
+					"([Ljava/lang/Object;)Ljava/lang/Object;");
 			ag.newInstance(declaringClassType);
 			ag.dup();
 			Class<?>[] types = constructor.getParameterTypes();
 			for (int i = 0; i < types.length; i++) {
 				Class<?> paraClazz = types[i];
 				Type paraType = Type.getType(paraClazz);
-				ag.loadArg(1);
+				ag.loadArg(0);
 				ag.push(i);
 				ag.arrayLoad(AsmUtils.OBJECT_TYPE);
 				if (paraClazz.isPrimitive())
@@ -84,10 +87,14 @@ public class AsmConstructorAccessor {
 			ag.visitMethodInsn(INVOKESPECIAL, declaringClassName, "<init>", Type.getConstructorDescriptor(constructor),
 					false);
 			ag.returnValue();
-			mv.visitEnd();
+			ag.visitMaxs(0, 0);
+			ag.endMethod();
 		}
 		cw.visitEnd();
-		return null;
+		
+		return (ConstructorAccessor<T>) SafeClassDefiner.INSTANCE
+				.defineClass(declaringClass.getClassLoader(), className, cw.toByteArray())
+				.getConstructor(Constructor.class).newInstance(constructor);
 	}
 
 }

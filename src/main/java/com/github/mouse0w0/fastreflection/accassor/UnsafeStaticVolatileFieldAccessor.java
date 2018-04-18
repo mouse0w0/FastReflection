@@ -6,14 +6,16 @@ import static java.util.Objects.requireNonNull;
 import java.lang.reflect.Field;
 import com.github.mouse0w0.fastreflection.FieldAccessor;
 
-public class UnsafeFieldAccessor implements FieldAccessor {
+public class UnsafeStaticVolatileFieldAccessor implements FieldAccessor {
 
 	private final Field field;
+	private final Class<?> declaringClass;
 	private final long offest;
 
-	public UnsafeFieldAccessor(Field field) {
+	public UnsafeStaticVolatileFieldAccessor(Field field) {
 		this.field = requireNonNull(field);
-		this.offest = getUnsafe().objectFieldOffset(field);
+		this.declaringClass = field.getDeclaringClass();
+		this.offest = getUnsafe().staticFieldOffset(field);
 	}
 
 	@Override
@@ -23,91 +25,91 @@ public class UnsafeFieldAccessor implements FieldAccessor {
 
 	@Override
 	public Object get(Object obj) throws Exception {
-		return getUnsafe().getObject(requireNonNull(obj), offest);
+		return getUnsafe().getObjectVolatile(declaringClass, offest);
 	}
 
 	@Override
 	public byte getByte(Object obj) throws Exception {
-		return getUnsafe().getByte(requireNonNull(obj), offest);
+		return getUnsafe().getByteVolatile(declaringClass, offest);
 	}
 
 	@Override
 	public short getShort(Object obj) throws Exception {
-		return getUnsafe().getShort(requireNonNull(obj), offest);
+		return getUnsafe().getShortVolatile(declaringClass, offest);
 	}
 
 	@Override
 	public int getInt(Object obj) throws Exception {
-		return getUnsafe().getInt(requireNonNull(obj), offest);
+		return getUnsafe().getIntVolatile(declaringClass, offest);
 	}
 
 	@Override
 	public long getLong(Object obj) throws Exception {
-		return getUnsafe().getLong(requireNonNull(obj), offest);
+		return getUnsafe().getLongVolatile(declaringClass, offest);
 	}
 
 	@Override
 	public float getFloat(Object obj) throws Exception {
-		return getUnsafe().getFloat(requireNonNull(obj), offest);
+		return getUnsafe().getFloatVolatile(declaringClass, offest);
 	}
 
 	@Override
 	public double getDouble(Object obj) throws Exception {
-		return getUnsafe().getDouble(requireNonNull(obj), offest);
+		return getUnsafe().getDoubleVolatile(declaringClass, offest);
 	}
 
 	@Override
 	public boolean getBoolean(Object obj) throws Exception {
-		return getUnsafe().getBoolean(requireNonNull(obj), offest);
+		return getUnsafe().getBooleanVolatile(declaringClass, offest);
 	}
 
 	@Override
 	public char getChar(Object obj) throws Exception {
-		return getUnsafe().getChar(requireNonNull(obj), offest);
+		return getUnsafe().getCharVolatile(declaringClass, offest);
 	}
 
 	@Override
 	public void set(Object obj, Object value) throws Exception {
-		getUnsafe().putObject(requireNonNull(obj), offest, value);
+		getUnsafe().putObjectVolatile(declaringClass, offest, value);
 	}
 
 	@Override
 	public void set(Object obj, byte value) throws Exception {
-		getUnsafe().putByte(requireNonNull(obj), offest, value);
+		getUnsafe().putByteVolatile(declaringClass, offest, value);
 	}
 
 	@Override
 	public void set(Object obj, short value) throws Exception {
-		getUnsafe().putShort(requireNonNull(obj), offest, value);
+		getUnsafe().putShortVolatile(declaringClass, offest, value);
 	}
 
 	@Override
 	public void set(Object obj, int value) throws Exception {
-		getUnsafe().putInt(requireNonNull(obj), offest, value);
+		getUnsafe().putIntVolatile(declaringClass, offest, value);
 	}
 
 	@Override
 	public void set(Object obj, long value) throws Exception {
-		getUnsafe().putLong(requireNonNull(obj), offest, value);
+		getUnsafe().putLongVolatile(declaringClass, offest, value);
 	}
 
 	@Override
 	public void set(Object obj, float value) throws Exception {
-		getUnsafe().putFloat(requireNonNull(obj), offest, value);
+		getUnsafe().putFloatVolatile(declaringClass, offest, value);
 	}
 
 	@Override
 	public void set(Object obj, double value) throws Exception {
-		getUnsafe().putDouble(requireNonNull(obj), offest, value);
+		getUnsafe().putDoubleVolatile(declaringClass, offest, value);
 	}
 
 	@Override
 	public void set(Object obj, boolean value) throws Exception {
-		getUnsafe().putBoolean(requireNonNull(obj), offest, value);
+		getUnsafe().putBooleanVolatile(declaringClass, offest, value);
 	}
 
 	@Override
 	public void set(Object obj, char value) throws Exception {
-		getUnsafe().putChar(requireNonNull(obj), offest, value);
+		getUnsafe().putCharVolatile(declaringClass, offest, value);
 	}
 }
