@@ -91,7 +91,8 @@ public final class AsmFieldAccessor {
 		String desc = "(Ljava/lang/Object;)" + type.getDescriptor();
 		MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, name, desc, null, new String[] { "java/lang/Exception" });
 		GeneratorAdapter ga = new GeneratorAdapter(mv, ACC_PUBLIC, name, desc);
-		if (isCastable(fieldType, type)) {
+		int sSort = fieldType.getSort(), tSort = type.getSort();
+		if (tSort == Type.OBJECT || isCastable(sSort, tSort) ) {
 			if (isStatic) {
 				ga.getStatic(classType, fieldName, fieldType);
 			} else {
@@ -99,7 +100,7 @@ public final class AsmFieldAccessor {
 				ga.checkCast(classType);
 				ga.getField(classType, fieldName, fieldType);
 			}
-			if(type.getSort() == Type.OBJECT)
+			if(tSort == Type.OBJECT)
 				ga.box(fieldType);
 			ga.returnValue();
 		} else {
@@ -114,24 +115,25 @@ public final class AsmFieldAccessor {
 		String desc = "(Ljava/lang/Object;" + type.getDescriptor() + ")V";
 		MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, name, desc, null, new String[] { "java/lang/Exception" });
 		GeneratorAdapter ga = new GeneratorAdapter(mv, ACC_PUBLIC, name, desc);
-		if (isCastable(type, fieldType)) {
-			if (isStatic) {
-				ga.loadArg(1);
-				if(type.getSort() == Type.OBJECT && fieldType.getSort() <= Type.DOUBLE)
-					ga.unbox(fieldType);
-				else
-					ga.checkCast(fieldType);
-				ga.putStatic(classType, fieldName, fieldType);
-			} else {
+		int sSort = type.getSort(), tSort = fieldType.getSort();
+		if (sSort == Type.OBJECT || isCastable(sSort, tSort)) {
+			if (!isStatic) {
 				ga.loadArg(0);
 				ga.checkCast(classType);
-				ga.loadArg(1);
-				if(type.getSort() == Type.OBJECT && fieldType.getSort() <= Type.DOUBLE)
+			}
+			ga.loadArg(1);
+			if (sSort == Type.OBJECT) {
+				if (tSort <= Type.DOUBLE)
 					ga.unbox(fieldType);
 				else
 					ga.checkCast(fieldType);
-				ga.putField(classType, fieldName, fieldType);
+			} else if (Type.BYTE <= sSort && sSort <= Type.DOUBLE && Type.BYTE <= tSort && tSort <= Type.DOUBLE) {
+				ga.cast(type, fieldType);
 			}
+			if (isStatic)
+				ga.putStatic(classType, fieldName, fieldType);
+			else
+				ga.putField(classType, fieldName, fieldType);
 			ga.returnValue();
 		} else {
 			ga.throwException(Type.getType(IllegalArgumentException.class),"");
@@ -140,11 +142,8 @@ public final class AsmFieldAccessor {
 		ga.endMethod();
 	}
 
-	private static boolean isCastable(Type sourceType, Type targetType) {
-		int sSort = sourceType.getSort(), tSort = targetType.getSort();
+	private static boolean isCastable(int sSort, int tSort) {
 		if(sSort == tSort)
-			return true;
-		if(sSort == Type.OBJECT && tSort == Type.OBJECT)
 			return true;
 		if (Type.BYTE <= sSort && sSort <= Type.DOUBLE && Type.BYTE <= tSort && tSort <= Type.DOUBLE && tSort < sSort)
 			return true;
