@@ -8,6 +8,7 @@ import com.github.mouse0w0.fastreflection.ConstructorAccessor;
 import com.github.mouse0w0.fastreflection.util.AsmUtils;
 import com.github.mouse0w0.fastreflection.util.SafeClassDefiner;
 
+import static java.util.Objects.requireNonNull;
 import static org.objectweb.asm.Opcodes.*;
 
 public class AsmConstructorAccessor {
@@ -16,6 +17,8 @@ public class AsmConstructorAccessor {
 	
 	@SuppressWarnings("unchecked")
 	public static <T> ConstructorAccessor<T> create(Constructor<T> constructor) throws Exception{
+		requireNonNull(constructor);
+		
 		Class<?> declaringClass = constructor.getDeclaringClass();
 		Type declaringClassType = Type.getType(declaringClass);
 		String declaringClassName = declaringClassType.getInternalName();

@@ -6,6 +6,7 @@ import java.lang.reflect.Modifier;
 import org.objectweb.asm.*;
 import org.objectweb.asm.commons.GeneratorAdapter;
 
+import static java.util.Objects.requireNonNull;
 import static org.objectweb.asm.Opcodes.*;
 
 import com.github.mouse0w0.fastreflection.MethodAccessor;
@@ -17,6 +18,8 @@ public class AsmMethodAccessor {
 	private static int id = 0;
 	
 	public static MethodAccessor create(Method method) throws Exception {
+		requireNonNull(method);
+		
 		boolean isStatic = Modifier.isStatic(method.getModifiers());
 		Class<?> declaringClass = method.getDeclaringClass();
 		Type declaringClassType = Type.getType(declaringClass);

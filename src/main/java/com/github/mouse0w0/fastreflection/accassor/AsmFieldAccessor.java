@@ -10,6 +10,7 @@ import com.github.mouse0w0.fastreflection.util.SafeClassDefiner;
 import org.objectweb.asm.*;
 import org.objectweb.asm.commons.GeneratorAdapter;
 
+import static java.util.Objects.requireNonNull;
 import static org.objectweb.asm.Opcodes.*;
 
 public final class AsmFieldAccessor {
@@ -17,6 +18,8 @@ public final class AsmFieldAccessor {
 	private static int id = 0;
 
 	public static FieldAccessor create(Field field) throws Exception {
+		requireNonNull(field);
+		
 		Class<?> declaringClass = field.getDeclaringClass();
 		String className = String.format("AsmFieldAccessor_%d_%s_%s", id++, declaringClass.getSimpleName(),
 				field.getName());

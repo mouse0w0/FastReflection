@@ -1,5 +1,7 @@
 package com.github.mouse0w0.fastreflection.accassor;
 
+import static java.util.Objects.requireNonNull;
+
 import java.lang.reflect.Method;
 
 import com.github.mouse0w0.fastreflection.MethodAccessor;
@@ -9,8 +11,8 @@ public class ReflectMethodAccessor implements MethodAccessor {
 	private final Method method;
 	
 	public ReflectMethodAccessor(Method method) {
+		this.method = requireNonNull(method);
 		method.setAccessible(true);
-		this.method = method;
 	}
 
 	@Override

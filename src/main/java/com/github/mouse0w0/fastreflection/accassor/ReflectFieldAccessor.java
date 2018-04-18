@@ -1,5 +1,7 @@
 package com.github.mouse0w0.fastreflection.accassor;
 
+import static java.util.Objects.requireNonNull;
+
 import java.lang.reflect.Field;
 
 import com.github.mouse0w0.fastreflection.FieldAccessor;
@@ -9,8 +11,8 @@ public class ReflectFieldAccessor implements FieldAccessor {
 	private final Field field;
 
 	public ReflectFieldAccessor(Field field){
+		this.field = requireNonNull(field);
 		field.setAccessible(true);
-		this.field = field;
 	}
 
 	@Override
