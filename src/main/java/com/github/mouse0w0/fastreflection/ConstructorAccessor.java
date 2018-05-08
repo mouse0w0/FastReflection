@@ -7,4 +7,5 @@ public interface ConstructorAccessor<T> {
 	Constructor<T> getConstructor();
 
 	T newInstance(Object ... initargs) throws Exception;
+
 }
