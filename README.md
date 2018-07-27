@@ -7,7 +7,7 @@ The latest build:
 <dependency>
     <groupId>com.github.Mouse0w0</groupId>
     <artifactId>FastReflection</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
 </dependency>
 ```
 Maven repository:
@@ -34,6 +34,6 @@ allprojects {
 Add the dependency
 ```groovy
 dependencies {
-    compile 'com.github.Mouse0w0:FastReflection:1.0.0'
+    compile 'com.github.Mouse0w0:FastReflection:1.0.1'
 }
 ```
