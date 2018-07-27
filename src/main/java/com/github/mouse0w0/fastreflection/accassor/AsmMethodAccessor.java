@@ -13,8 +13,11 @@ import com.github.mouse0w0.fastreflection.MethodAccessor;
 import com.github.mouse0w0.fastreflection.util.AsmUtils;
 import com.github.mouse0w0.fastreflection.util.SafeClassDefiner;
 
-public class AsmMethodAccessor {
-	
+public final class AsmMethodAccessor {
+
+	private AsmMethodAccessor() {
+	}
+
 	private static int id = 0;
 	
 	public static MethodAccessor create(Method method) throws Exception {

@@ -4,11 +4,11 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-public final class SafeClassDefiner {
-	public static final SafeClassDefiner INSTANCE = new SafeClassDefiner();
-
-	private SafeClassDefiner() {
-	}
+/**
+ * An util helps to load class from bytecode
+ */
+public enum SafeClassDefiner {
+	INSTANCE;
 
 	private final Map<ClassLoader, GeneratedClassLoader> loaders = Collections.synchronizedMap(new WeakHashMap<>());
 

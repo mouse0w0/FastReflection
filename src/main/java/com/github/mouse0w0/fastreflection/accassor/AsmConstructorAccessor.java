@@ -11,10 +11,13 @@ import com.github.mouse0w0.fastreflection.util.SafeClassDefiner;
 import static java.util.Objects.requireNonNull;
 import static org.objectweb.asm.Opcodes.*;
 
-public class AsmConstructorAccessor {
+public final class AsmConstructorAccessor {
+
+	private AsmConstructorAccessor() {
+	}
 
 	private static int id = 0;
-	
+
 	@SuppressWarnings("unchecked")
 	public static <T> ConstructorAccessor<T> create(Constructor<T> constructor) throws Exception{
 		requireNonNull(constructor);
