@@ -15,6 +15,9 @@ import static org.objectweb.asm.Opcodes.*;
 
 public final class AsmFieldAccessor {
 
+	private AsmFieldAccessor() {
+	}
+
 	private static int id = 0;
 
 	public static FieldAccessor create(Field field) throws Exception {

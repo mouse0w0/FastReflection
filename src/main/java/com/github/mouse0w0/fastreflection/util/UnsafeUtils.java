@@ -9,8 +9,12 @@ public final class UnsafeUtils {
 	private UnsafeUtils() {
 	}
 
+	/**
+	 * Cached {@code Unsafe} object
+	 */
 	private static final Unsafe UNSAFE;
 	static {
+		// Getting object of Unsafe
 		Unsafe unsafe;
 		try {
 			Class clazz = Class.forName("sun.misc.Unsafe");
@@ -25,10 +29,17 @@ public final class UnsafeUtils {
 		UNSAFE = unsafe;
 	}
 
+	/**
+	 * @return true if success to get {@code Unsafe} object
+	 */
 	public static boolean isUnsafeSupported() {
 		return UNSAFE != null;
 	}
 
+	/**
+	 * @return the object of {@code Unsafe},
+	 * may return null if Unsafe is not supported
+	 */
 	public static Unsafe getUnsafe() {
 		return UNSAFE;
 	}

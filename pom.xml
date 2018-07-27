@@ -4,7 +4,7 @@
 
 	<groupId>com.github.mouse0w0</groupId>
 	<artifactId>fastreflection</artifactId>
-	<version>1.0.0</version>
+	<version>1.0.1</version>
 	<packaging>jar</packaging>
 
 	<name>FastReflection</name>
