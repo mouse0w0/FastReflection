@@ -1,6 +1,6 @@
 package com.github.mouse0w0.fastreflection;
 
-import com.github.mouse0w0.fastreflection.accassor.*;
+import com.github.mouse0w0.fastreflection.accessor.*;
 import com.github.mouse0w0.fastreflection.util.UnsafeReflections;
 import com.github.mouse0w0.fastreflection.util.UnsafeUtils;
 
@@ -8,7 +8,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Objects;
 
 public interface FastReflection {
 
